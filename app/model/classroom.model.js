@@ -7,10 +7,13 @@ const ClassroomSchema = mongoose.Schema({
     type: String,
     trim: true
   },
-  start: Number,
-  end: Number,
+  start: Date,
+  end: Date,
   late: Number,
-  date: String,
+  day: {
+    type: String,
+    trim: true
+  },
   teacher: {
     type: Schema.Types.ObjectId,
     ref: 'User'

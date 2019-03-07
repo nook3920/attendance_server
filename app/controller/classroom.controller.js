@@ -13,3 +13,27 @@ exports.classroomList = async (req, res) => {
   }
   res.send('ok')
 }
+
+exports.createClass = async (req, res) => {
+  console.log('create classroom')
+  try {
+      const classRoom = new Classroom({
+      subject: req.body.subjectName,
+      start: new Date(req.body.classTime[0]),
+      end: new Date(req.body.classTime[1]),
+      late: parseInt(req.body.late),
+      students: req.body.students,
+      teacher: req.user._id,
+      day: req.body.classDay
+    })
+    let newClass = await classRoom.save()
+    res.status(201).send({
+      message: 'classroom created'
+    })
+    return
+  } catch (err) {
+    res.boom.badImplementation(err)
+    return
+  }
+  // res.send(payload)
+}

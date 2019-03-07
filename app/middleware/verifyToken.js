@@ -17,6 +17,7 @@ verifyToken = (req, res, next) => {
       return
     }
     req.user = decoded
+    // console.log(req.user)
     next()
   })
 }

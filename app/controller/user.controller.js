@@ -78,6 +78,7 @@ exports.validateToken = (req, res) => {
       res.boom.unauthorized('token expired')
       return
     }
+    console.log(decoded)
     res.status(200).send(decoded)
     return
   })
@@ -119,4 +120,14 @@ exports.getAvatar = (req, res) => {
     }
     return res.send(user.avatar)
   })
+}
+
+exports.getStudents = async (req, res) => {
+  console.log('get studene list')
+  try {
+    const students = await User.find({role: 'STUDENT'}, '_id name user_id')
+    return res.send(students)
+  } catch (err) {
+    return res.boom.badImplementation('DB ERROR')
+  }
 }

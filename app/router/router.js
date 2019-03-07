@@ -10,4 +10,6 @@ module.exports = (app) => {
   app.get('/user/avatar', verifyToken, userController.getAvatar)
 
   app.get('/class', classroomController.classroomList)
+  app.post('/class', verifyToken, classroomController.createClass)
+  app.get('/class/student',  userController.getStudents)
 }
