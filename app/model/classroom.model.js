@@ -7,6 +7,10 @@ const ClassroomSchema = mongoose.Schema({
     type: String,
     trim: true
   },
+  roomId: {
+    type: String,
+    trim: true
+  },
   start: Date,
   end: Date,
   late: Number,

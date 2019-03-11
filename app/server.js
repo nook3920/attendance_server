@@ -11,11 +11,12 @@ app.use(cors())
 app.use(bodyParser.json({limit: '50mb'}))
 app.use(bodyParser.urlencoded({ extended: false , limit: '50mb'}))
 app.use('/avatar', express.static('avatar'))
+app.use('/datasets', express.static('datasets'))
 const config = require('./config/config')
 require('./router/router')(app)
 
 mongoose.Promise = global.Promise
-mongoose.connect(config.url)
+mongoose.connect(config.url, { useNewUrlParser: true })
 .then(() => {
     console.log('Succesfully connected to MongoDB')
 })
