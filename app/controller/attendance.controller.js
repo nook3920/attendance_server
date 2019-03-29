@@ -16,6 +16,8 @@ function checkAttendStatus(now, start, end, late) {
     return 1
   else if(now > (start+late) && now <= end)
     return 2
+  else if(now < start)
+    return 5
   else 
     return 3
 }

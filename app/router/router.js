@@ -17,6 +17,7 @@ module.exports = (app, io) => {
   app.post('/class', verifyToken, classroomController.createClass)
   app.get('/class/student',  userController.getStudents)
   app.get('/class/:id', classroomController.getClassById)
+  app.delete('/class/:id', classroomController.delClass)
 
   app.post('/attend', AttendanceController.handleAtten)
   app.get('/attend', AttendanceController.showAttend)
