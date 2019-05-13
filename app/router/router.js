@@ -12,13 +12,20 @@ module.exports = (app, io) => {
   app.post('/user/picture', verifyToken, userController.uploadPicture)
   app.get('/user/picture', verifyToken, userController.getPicture)
   app.delete('/user/picture', verifyToken, userController.deletePicture)
+  app.post('/user/profile', verifyToken, userController.editProfile)
 
-  app.get('/class', classroomController.classroomList)
+  app.get('/class',verifyToken, classroomController.classroomList)
   app.post('/class', verifyToken, classroomController.createClass)
   app.get('/class/student',  userController.getStudents)
   app.get('/class/:id', classroomController.getClassById)
   app.delete('/class/:id', classroomController.delClass)
+  app.post('/classend', classroomController.endClass)
 
   app.post('/attend', AttendanceController.handleAtten)
   app.get('/attend', AttendanceController.showAttend)
+  app.post('/att', AttendanceController.att)
+  app.post('/changeatt', AttendanceController.changeAttendStatus)
+  app.post('/attendresult', AttendanceController.classResult)
+  app.get('/studentresult',verifyToken, AttendanceController.studentResult)
+  app.get('/attbydate/:id', AttendanceController.attByDate)
 }

@@ -12,8 +12,9 @@ app.use(bodyParser.json({limit: '50mb'}))
 app.use(bodyParser.urlencoded({ extended: false , limit: '50mb'}))
 app.use('/avatar', express.static('avatar'))
 app.use('/datasets', express.static('datasets'))
+app.use('/attend_picture', express.static('attend_picture'))
 const config = require('./config/config')
-
+const Uss = require('./model/user.model')
 mongoose.Promise = global.Promise
 mongoose.connect(config.url, { useNewUrlParser: true})
 .then(() => {
@@ -39,9 +40,16 @@ server.on('ready', () => console.log('agenda ready!'))
 const io = require('socket.io')(server)
 require('./router/router')(app, io)
 
+
 io.on('connection', socket => {
   console.log(socket.id)
-  socket.on('SEND_MESSAGE', data => {
-    io.emit('MESSAGE', data)
+  io.emit('camera', `Hello ${socket.id}`)
+  socket.on('SEND_CAMERA1', data => {
+    io.emit('camera1', data)
   })
+  
+  socket.on('SEND_CAMERA2', data => {
+    io.emit('camera2', data)
+  })
+  
 })

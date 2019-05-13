@@ -4,6 +4,7 @@ const config = require('../config/config')
 const User = require('../model/user.model')
 const fs = require('fs')
 const axios = require('axios')
+const mongoose = require('mongoose')
 
 exports.signup = async (req, res) => {
   console.log('User Signup')
@@ -198,4 +199,18 @@ exports.deletePicture = async (req, res) => {
   })
 
   res.send(req.body)
+}
+
+exports.editProfile = async (req, res) => {
+  const user_id =  req.user.user_id
+  const name = req.body.name
+  const email = req.body.email
+
+  if(!user_id || !name || !email){
+    res.boom.badRequest('bad params')
+  }
+  let result = await User.findOneAndUpdate({user_id: user_id}, {name: name, email: email}).exec()
+  console.log(result)
+  res.send({message: 'ok'})
+
 }

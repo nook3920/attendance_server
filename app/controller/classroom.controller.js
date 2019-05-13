@@ -14,14 +14,14 @@ function getDay(day) {
 function updateNotAttend(stuid, classid){
   if(!stuid.length)
     return
-  dNow = new Date('2019-03-12')
+  dNow = new Date()
   stSet = stuid.map(st => {
     return {
       studentid: st,
       classroomid: classid,
       status: 3,
       date: dNow,
-      picture: 'N/A'
+      picture: '/attend_picture/a.jpg'
     }
   })
   Atten.insertMany(stSet, (err, docs) => {
@@ -32,36 +32,32 @@ function updateNotAttend(stuid, classid){
   // console.log(stSet)
 }
 
- agenda.define('testJob', async (job, done) => {
-  const {classId} = job.attrs.data
-  console.log('test job done! ', classId)
-  // try {
-  //   const classroom = await 
-  // } catch (err) {
-    
-  // }
-  done()
-})
 
-agenda.start().then(() => { console.log('agenda ready')})
-
-
-exports.classroomList = async (req, res) => {
-  console.log('classroom list')
+exports.endClass = async (req, res) => {
+  const classId = req.body.classId
+  const dNow = new Date().toISOString().split('T')[0]
+  const dd= new Date()
+  console.log('test job done! ', dNow)
   try {
-    const CR = await Classroom.findById('5c878b8a139fdb37cc753224')
+    const CR = await Classroom.findById(classId)
+    const dEnd = new Date(CR.end)
+    console.log(dEnd)
+    if(dEnd > dd){
+      return 0
+    }
+
     const StList = CR.students.map(aa => {
       return aa.toString()
     })
     const att = await Atten.find({ 
-      classroomid: '5c878b8a139fdb37cc753224',
-      '$where': 'this.date.toJSON().slice(0,10) == "2019-03-12"'}).select({ studentid: 1})
-
+      classroomid: classId,
+      '$where': 'this.date.toJSON().slice(0,10) == new Date().toJSON().slice(0,10)'}).select({ studentid: 1})
+    console.log(att)
+    
     const StAtt = att.map(ss => {
       return ss.studentid.toString()
     })
-    console.log(StList)
-    console.log(StAtt)
+
     let notAtt = StList.filter(function(val) {
       // console.log(StAtt.indexOf(val))
       return StAtt.indexOf(val) == -1
@@ -70,13 +66,65 @@ exports.classroomList = async (req, res) => {
       return mongoose.Types.ObjectId(ss)
     })
     console.log(notAtt.length)
-    updateNotAttend(notAtt, '5c878b8a139fdb37cc753224')
+    updateNotAttend(notAtt, classId)
+    res.status(200).send({ message: 'class ending!'})
+  } catch (err) {
+    console.log(err)
+    res.status(400).send({ message: 'class end error!'})
+  }
+}
+
+ agenda.define('testJob', async (job, done) => {
+  const {classId} = job.attrs.data
+  const dNow = new Date().toISOString().split('T')[0]
+  const dd= new Date()
+  console.log('test job done! ', dNow)
+  try {
+    const CR = await Classroom.findById(classId)
+    const dEnd = new Date(CR.end)
+    console.log(dEnd)
+    if(dEnd > dd){
+      return 0
+    }
+
+    const StList = CR.students.map(aa => {
+      return aa.toString()
+    })
+    const att = await Atten.find({ 
+      classroomid: classId,
+      '$where': 'this.date.toJSON().slice(0,10) == new Date().toJSON().slice(0,10)'}).select({ studentid: 1})
+    console.log(att)
     
+    const StAtt = att.map(ss => {
+      return ss.studentid.toString()
+    })
+
+    let notAtt = StList.filter(function(val) {
+      // console.log(StAtt.indexOf(val))
+      return StAtt.indexOf(val) == -1
+    })
+    notAtt = notAtt.map(ss => {
+      return mongoose.Types.ObjectId(ss)
+    })
+    console.log(notAtt.length)
+    updateNotAttend(notAtt, classId)
   } catch (err) {
     console.log(err)
   }
+  done()
+})
+
+agenda.start().then(() => { console.log('agenda ready')})
+
+
+exports.classroomList = async (req, res) => {
+  console.log('classroom list')
+  const userid = mongoose.Types.ObjectId(req.user._id)
+
+  
+
   try {
-    const classrooms = await Classroom.find({}).populate({
+    const classrooms = await Classroom.find({ teacher : userid}).populate({
       path: 'teacher',
       select: 'name'
     })
@@ -110,10 +158,11 @@ exports.createClass = async (req, res) => {
     const hour = new Date(req.body.classTime[1]).getHours()
     const dd = getDay(req.body.classDay)
 
-    const cron = `${minute} ${hour} * * ${dd}`
+    // const cron = `${minute} ${hour} * * ${dd}`
 
-    const jj = agenda.create('testJob', { classId: newClass._id })
-    await jj.repeatEvery(cron).save()
+    // const jj = agenda.create('testJob', { classId: newClass._id })
+    // jj.priority('highest')
+    // await jj.repeatEvery(cron).save()
     
 
     User.updateMany({_id: { $in: newClass.students }},
@@ -124,7 +173,8 @@ exports.createClass = async (req, res) => {
           console.log(err)
         console.log(doc)
       })
-
+    
+    // await Atten.deleteMany({classroomid: newClass._id}).exec()
     res.status(201).send({
       message: 'classroom created'
     })
@@ -145,7 +195,7 @@ exports.getClassById = async (req, res) => {
     console.log(err)
     res.send(err)
   }
-  res.send(classroom)
+  
 }
 
 exports.delClass = async (req, res) => {
@@ -167,10 +217,16 @@ exports.delClass = async (req, res) => {
         console.log(err)
         console.log(doc)
       })
+      
+      await Atten.deleteMany({classroomid: id}).exec()
 
-      agenda.cancel({})
+      agenda.cancel({"data.classId": mongoose.Types.ObjectId(id)}, (err, numRemove) => {
+        if(err) console.log(err)
+        console.log(numRemove)
+      })
       res.send({ message: `delete classroom `})
     } catch (error) {
-      res.boom.badImplementation(err)
+      console.log(error)
+      res.boom.badImplementation(error)
     }
 }
