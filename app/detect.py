@@ -13,14 +13,19 @@ sio = socketio.Client()
 
 @sio.on('connect')
 def on_connect():
-  print('connection established')
+  print('connected!')
 
+@sio.on('camera')
+def on_camera(data):
+  print('Hello')
 # @sio.on('camera')
 # def on_message(data):
 #   print('message received with ', data)
   
 print('socket stat')
 sio.connect('http://localhost:3000')
+print('socket connect')
+
 
 
 stream = WebcamVideoStream(src=0).start()
@@ -55,13 +60,16 @@ while True:
               FF = frame[top-35:bottom+35, left-20:right+20].copy()
               
               ba = base64.b64encode(cv2.imencode('.jpg', FF)[1].tobytes())
-              print(type(ba))
+              # print(type(ba))
+              # print(ba)
               sio.emit('SEND_CAMERA1', {'id': int(random.random()*100000000),'name': name, 'pic': ba})
               r = requests.post('http://localhost:3000/attend', data= { "user_id": name, "roomid": roomid, "picture": ba})
+              
               print(r.json())
             else:
               FF = frame[top-35:bottom+35, left-20:right+20].copy()
               ba = base64.b64encode(cv2.imencode('.jpg', FF)[1].tobytes())
+              # print(ba)
               sio.emit('SEND_CAMERA1', {'id': int(random.random()*100000000), 'name': 'unknow', 'pic': ba})
             namelist[name] = 0
       else:
@@ -95,7 +103,7 @@ while True:
               FF = frame[top-35:bottom+35, left-20:right+20].copy()
               
               ba = base64.b64encode(cv2.imencode('.jpg', FF)[1].tobytes())
-              print(type(ba))
+              # print(type(ba))
               sio.emit('SEND_CAMERA2', {'id': int(random.random()*100000000),'name': name, 'pic': ba})
               r = requests.post('http://localhost:3000/attend', data= { "user_id": name, "roomid": roomid, "picture": ba})
               print(r.json())

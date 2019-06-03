@@ -43,8 +43,11 @@ require('./router/router')(app, io)
 
 io.on('connection', socket => {
   console.log(socket.id)
+
   io.emit('camera', `Hello ${socket.id}`)
   socket.on('SEND_CAMERA1', data => {
+
+    console.log('has data', data)
     io.emit('camera1', data)
   })
   

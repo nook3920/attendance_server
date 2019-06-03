@@ -94,10 +94,11 @@ module.exports = function (io) {
           // console.log((timeToMinutes(cc.start) <= timeToMinutes(dateNow) && (timeToMinutes(cc.end) >= timeToMinutes(dateNow))))
           return (timeToMinutes(cc.start) <= timeToMinutes(dateNow) && (timeToMinutes(cc.end) >= timeToMinutes(dateNow)))
         })
-        // console.log(classroom.length)
-        if (classroom.length === 0) {
-          res.send({ message: 'no class room' })
+        // console.log('classlength', classroom.length)
+        if (!classroom.length) {
+          return res.send({ message: 'no class room' })
         }
+        
         classroom = classroom[0]
         // console.log(classroom.students)
         // console.log(classroom.day)
